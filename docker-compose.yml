@@ -29,6 +29,11 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: true
+      SPRINGDOC_SWAGGER_UI_PATH: /docs
+      SPRINGDOC_SWAGGER_UI_USE_ROOT_PATH: true
+      SPRINGDOC_INFO_TITLE: Cashly API
+      SPRINGDOC_INFO_DESCRIPTION: API de gestão financeira
+      SPRINGDOC_INFO_VERSION: 1.0.0
     depends_on:
       db:
         condition: service_healthy
