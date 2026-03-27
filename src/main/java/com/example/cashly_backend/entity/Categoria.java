@@ -1,7 +1,6 @@
 package com.example.cashly_backend.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Pattern;
 
 @Entity
 @Table(name = "categoria")
@@ -18,12 +17,8 @@ public class Categoria {
     @Column(name = "Icone", length = 100)
     private String icone;
 
-    @Pattern(regexp = "receita|despesa", message = "Tipo deve ser 'receita' ou 'despesa'")
-    @Column(name = "Tipo", length = 15)
-    private String tipo;
-
     @ManyToOne
-    @JoinColumn(name = "Id_Usuario", nullable = false)
+    @JoinColumn(name = "Id_Usuario", nullable = true)
     private Usuario usuario;
 
     public Integer getId_categoria() { return id_categoria; }
@@ -34,9 +29,6 @@ public class Categoria {
 
     public String getIcone() { return icone; }
     public void setIcone(String icone) { this.icone = icone; }
-
-    public String getTipo() { return tipo; }
-    public void setTipo(String tipo) { this.tipo = tipo; }
 
     public Usuario getUsuario() { return usuario; }
     public void setUsuario(Usuario usuario) { this.usuario = usuario; }
