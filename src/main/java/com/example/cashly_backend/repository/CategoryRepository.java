@@ -6,9 +6,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import com.example.cashly_backend.entity.Categoria;
 
-public interface CategoriaRepository extends JpaRepository<Categoria, Integer> {
-    List<Categoria> findByUsuarioIsNull();
+public interface CategoryRepository extends JpaRepository<Category, Long> {
 
-    @Query("SELECT c FROM Categoria c WHERE c.usuario.id_usuario = :id")
-    List<Categoria> findByUsuarioId(@Param("id") Integer id);
+    List<Category> findByUserIdIsNull();
+
+    @Query("SELECT c FROM Category c WHERE c.userId = :id")
+    List<Category> findByUserId(@Param("id") Integer id);
 }
