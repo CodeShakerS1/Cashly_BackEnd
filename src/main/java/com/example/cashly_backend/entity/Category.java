@@ -9,7 +9,7 @@ public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long categoryid;
+    private Integer categoryid;
 
     @Column(name = "categoryname", nullable = false, length = 50)
     private String categoryname;
@@ -26,7 +26,7 @@ public class Category {
     public Category() {
     }
 
-    public Category(Long categoryid, String categoryname, String icon, BigDecimal limitAmount, Integer userId) {
+    public Category(Integer categoryid, String categoryname, String icon, BigDecimal limitAmount, Integer userId) {
         this.categoryid = categoryid;
         this.categoryname = categoryname;
         this.icon = icon;
@@ -34,11 +34,11 @@ public class Category {
         this.userId = userId;
     }
 
-    public Long getCategoryid() {
+    public Integer getCategoryid() {
         return categoryid;
     }
 
-    public void setCategoryid(Long categoryid) {
+    public void setCategoryid(Integer categoryid) {
         this.categoryid = categoryid;
     }
 

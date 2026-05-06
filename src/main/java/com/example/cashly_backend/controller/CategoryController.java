@@ -27,7 +27,7 @@ public class CategoryController {
     }
 
     @GetMapping("/category/{id}")
-    public ResponseEntity<Category> getCategoryById(@PathVariable Long id) {
+    public ResponseEntity<Category> getCategoryById(@PathVariable Integer id) {
         return categoryService.listarPorId(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -44,7 +44,7 @@ public class CategoryController {
     }
 
     @PutMapping("/category/{id}")
-    public ResponseEntity<String> updateCategory(@PathVariable Long id, @RequestBody Category updatedCategory) {
+    public ResponseEntity<String> updateCategory(@PathVariable Integer id, @RequestBody Category updatedCategory) {
         if (categoryService.listarPorId(id).isPresent()) {
             categoryService.editar(id, updatedCategory);
             return ResponseEntity.ok("Category updated successfully!");
@@ -53,7 +53,7 @@ public class CategoryController {
     }
 
     @DeleteMapping("/category/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteCategory(@PathVariable Integer id) {
         if (categoryService.listarPorId(id).isPresent()) {
             categoryService.deletar(id);
             return ResponseEntity.noContent().build();

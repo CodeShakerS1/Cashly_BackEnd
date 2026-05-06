@@ -19,7 +19,7 @@ public class CategoryService {
         return repository.findAll();
     }
 
-    public Optional<Category> listarPorId(Long id) {
+    public Optional<Category> listarPorId(Integer id) {
         return repository.findById(id);
     }
 
@@ -35,13 +35,12 @@ public class CategoryService {
         return repository.save(category);
     }
 
-    public Category editar(Long id, Category category) {
-        // Garantimos que o ID passado na URL seja o mesmo salvo no banco
+    public Category editar(Integer id, Category category) {
         category.setCategoryid(id);
         return repository.save(category);
     }
 
-    public void deletar(Long id) {
+    public void deletar(Integer id) {
         repository.deleteById(id);
     }
 }
