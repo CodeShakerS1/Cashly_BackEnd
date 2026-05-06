@@ -1,86 +1,89 @@
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!50503 SET NAMES utf8 */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+-- CREATE DATABASE IF NOT EXISTS cashly;
+-- USE cashly;
 
-DROP TABLE IF EXISTS `gasto`;
-DROP TABLE IF EXISTS `receita`;
-DROP TABLE IF EXISTS `categoria`;
-DROP TABLE IF EXISTS `usuario`;
-
-CREATE TABLE `usuario` (
-  `Id_Usuario` int NOT NULL AUTO_INCREMENT,
-  `Nome` varchar(100) NOT NULL,
-  `Email` varchar(100) NOT NULL,
-  `Senha` varchar(255) NOT NULL,
-  `Foto` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`Id_Usuario`),
-  UNIQUE KEY `Email` (`Email`)
+-- 1. Tabela de Usuários
+CREATE TABLE IF NOT EXISTS `users` (
+  `userid` int NOT NULL AUTO_INCREMENT,
+  `username` varchar(100) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `userpassword` varchar(100) NOT NULL,
+  `photo` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`userid`),
+  UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE `categoria` (
-  `Id_Categoria` int NOT NULL AUTO_INCREMENT,
-  `Nome` varchar(50) NOT NULL,
-  `Icone` varchar(100) DEFAULT NULL,
-  `Id_Usuario` int DEFAULT NULL,
-  PRIMARY KEY (`Id_Categoria`),
-  KEY `Fk_Id_Usrio` (`Id_Usuario`),
-  CONSTRAINT `Fk_Id_Usrio` FOREIGN KEY (`Id_Usuario`) REFERENCES `usuario` (`Id_Usuario`)
+-- 2. Tabela de Categorias
+CREATE TABLE IF NOT EXISTS `category` (
+  `categoryid` int NOT NULL AUTO_INCREMENT,
+  `categoryname` varchar(50) NOT NULL,
+  `icon` varchar(255) DEFAULT NULL,
+  `limit_amount` decimal(10,2) DEFAULT NULL,
+  `userid` int DEFAULT NULL,
+  PRIMARY KEY (`categoryid`),
+  KEY `Fk_user_id` (`userid`),
+  CONSTRAINT `Fk_category_user` FOREIGN KEY (`userid`) REFERENCES `users` (`userid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE `receita` (
-  `Id_Receita` int NOT NULL AUTO_INCREMENT,
-  `Valor` decimal(10,2) NOT NULL,
-  `Descricao` varchar(100) DEFAULT NULL,
-  `Metodo` varchar(50) DEFAULT NULL,
-  `Data` date NOT NULL,
-  `Id_Categoria` int NOT NULL,
-  `Id_Usuario` int NOT NULL,
-  PRIMARY KEY (`Id_Receita`),
-  KEY `Fk_IdCategoria` (`Id_Categoria`),
-  KEY `Fk_IdUsuario` (`Id_Usuario`),
-  CONSTRAINT `Fk_IdCategoria` FOREIGN KEY (`Id_Categoria`) REFERENCES `categoria` (`Id_Categoria`),
-  CONSTRAINT `Fk_IdUsuario` FOREIGN KEY (`Id_Usuario`) REFERENCES `usuario` (`Id_Usuario`),
-  CONSTRAINT `receita_chk_1` CHECK ((`Metodo` in ('Pix','Crédito','Débito','Dinheiro')))
+-- 3. Tabela de Receitas (Income)
+CREATE TABLE IF NOT EXISTS `income` (
+  `incomeid` int NOT NULL AUTO_INCREMENT,
+  `incomename` varchar(100) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `method` varchar(50) NOT NULL,
+  `incomedate` date NOT NULL,
+  `userid` int DEFAULT NULL,
+  PRIMARY KEY (`incomeid`),
+  KEY `Fk_userid` (`userid`),
+  CONSTRAINT `Fk_userid_income` FOREIGN KEY (`userid`) REFERENCES `users` (`userid`),
+  CONSTRAINT `income_chk_method` CHECK ((`method` in ('Pix','Credit','Debit','Cash')))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE `gasto` (
-  `Id_Gasto` int NOT NULL AUTO_INCREMENT,
-  `Valor` decimal(10,2) NOT NULL,
-  `Descricao` varchar(100) DEFAULT NULL,
-  `Metodo` varchar(50) DEFAULT NULL,
-  `Data` date NOT NULL,
-  `Id_Categoria` int NOT NULL,
-  `Id_Usuario` int NOT NULL,
-  PRIMARY KEY (`Id_Gasto`),
-  KEY `Fk_Id_Categoria` (`Id_Categoria`),
-  KEY `Fk_Id_Usuario` (`Id_Usuario`),
-  CONSTRAINT `Fk_Id_Categoria` FOREIGN KEY (`Id_Categoria`) REFERENCES `categoria` (`Id_Categoria`),
-  CONSTRAINT `Fk_Id_Usuario` FOREIGN KEY (`Id_Usuario`) REFERENCES `usuario` (`Id_Usuario`),
-  CONSTRAINT `gasto_chk_1` CHECK ((`Metodo` in ('Pix','Crédito','Débito','Dinheiro')))
+-- 4. Tabela de Despesas (Expense)
+CREATE TABLE IF NOT EXISTS `expense` (
+  `expenseid` int NOT NULL AUTO_INCREMENT,
+  `expensename` varchar(100) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `method` varchar(50) NOT NULL,
+  `expensedate` date NOT NULL,
+  `userid` int DEFAULT NULL,
+  `categoryid` int DEFAULT NULL,
+  PRIMARY KEY (`expenseid`),
+  KEY `fk_user` (`userid`),
+  KEY `Fk_category` (`categoryid`),
+  CONSTRAINT `Fk_category_expense` FOREIGN KEY (`categoryid`) REFERENCES `category` (`categoryid`),
+  CONSTRAINT `fk_user_expense` FOREIGN KEY (`userid`) REFERENCES `users` (`userid`),
+  CONSTRAINT `expense_chk_method` CHECK ((`method` in ('Pix','Credit','Debit','Cash')))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Usuarios padrão
-INSERT INTO `usuario` VALUES 
-(1,'João Victor da Silva','joaovictor@email.com','123456',NULL),
-(2,'Maria Souza','maria@email.com','123456',NULL),
-(3,'Carlos Lima','carlos@email.com','123456',NULL);
+-- 5. Tabela de Notificações
+CREATE TABLE IF NOT EXISTS `notification` (
+  `notificationid` int NOT NULL AUTO_INCREMENT,
+  `title` varchar(100) NOT NULL,
+  `message` varchar(255) NOT NULL,
+  `type` varchar(50) NOT NULL,
+  `is_read` tinyint(1) DEFAULT '0',
+  `created_at` datetime NOT NULL,
+  `userid` int NOT NULL,
+  PRIMARY KEY (`notificationid`),
+  KEY `fk_userr_id` (`userid`),
+  CONSTRAINT `fk_userr_id_notif` FOREIGN KEY (`userid`) REFERENCES `users` (`userid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Categorias padrão (Id_Usuario = NULL)
-INSERT INTO `categoria` VALUES 
-(1, 'Alimentação', 'restaurant', NULL),
-(2, 'Transporte', 'directions-car', NULL),
-(3, 'Assinaturas', 'subscriptions', NULL),
-(4, 'Pessoal', 'person', NULL),
-(5, 'Saúde', 'favorite', NULL),
-(6, 'Moradia', 'home', NULL);
-
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+-- 6. Tabela de Transações (Histórico/Movimentações)
+CREATE TABLE IF NOT EXISTS `transaction` (
+  `transactionsid` int NOT NULL AUTO_INCREMENT,
+  `amount` decimal(10,2) NOT NULL,
+  `description` varchar(100) DEFAULT NULL,
+  `method` varchar(50) DEFAULT NULL,
+  `transactiondate` date NOT NULL,
+  `userid` int NOT NULL,
+  `expenseid` int DEFAULT NULL,
+  `incomeid` int DEFAULT NULL,
+  PRIMARY KEY (`transactionsid`),
+  KEY `Fk_Id_User_` (`userid`),
+  KEY `Fk_Id_Expense` (`expenseid`),
+  KEY `Fk_Id_Income` (`incomeid`),
+  CONSTRAINT `Fk_Id_Expense_trans` FOREIGN KEY (`expenseid`) REFERENCES `expense` (`expenseid`),
+  CONSTRAINT `Fk_Id_Income_trans` FOREIGN KEY (`incomeid`) REFERENCES `income` (`incomeid`),
+  CONSTRAINT `Fk_Id_User_trans` FOREIGN KEY (`userid`) REFERENCES `users` (`userid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
