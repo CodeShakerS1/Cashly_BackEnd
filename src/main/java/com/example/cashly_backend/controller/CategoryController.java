@@ -1,63 +1,58 @@
 package com.example.cashly_backend.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import jakarta.validation.Valid;
 
-import com.example.cashly_backend.entity.Categoria;
-import com.example.cashly_backend.service.CategoriaService;
+import com.example.cashly_backend.entity.Category;
+import com.example.cashly_backend.service.CategoryService;
 
 @RestController
-@RequestMapping("/category")
 public class CategoryController {
 
     @Autowired
     private CategoryService categoryService;
 
-    @PostMapping
-    public ResponseEntity<String> criarCategoria(@RequestBody Category category) {
+    @PostMapping("/category")
+    public ResponseEntity<String> createCategory(@RequestBody Category category) {
         categoryService.cadastrar(category);
-        return ResponseEntity.status(201).body("Categoria criada com sucesso!");
+        return ResponseEntity.status(201).body("Category created successfully!");
     }
 
-    @GetMapping
-    public ResponseEntity<List<Category>> getCategory() {
-        List<Category> categorias = categoryService.listarTodas();
-        return ResponseEntity.ok(categorias);
+    @GetMapping("/category")
+    public ResponseEntity<List<Category>> getCategories() {
+        return ResponseEntity.ok(categoryService.listarTodas());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/category/{id}")
     public ResponseEntity<Category> getCategoryById(@PathVariable Long id) {
         return categoryService.listarPorId(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/padrao")
-    public ResponseEntity<List<Category>> getCategoryPadrao() {
+    @GetMapping("/category/default")
+    public ResponseEntity<List<Category>> getDefaultCategories() {
         return ResponseEntity.ok(categoryService.listarPadrao());
     }
 
-    @GetMapping("/usuario/{id}")
-    public ResponseEntity<List<Category>> getCategoryByUsuario(@PathVariable Integer id) {
+    @GetMapping("/category/user/{id}")
+    public ResponseEntity<List<Category>> getCategoriesByUser(@PathVariable Integer id) {
         return ResponseEntity.ok(categoryService.listarPorUsuario(id));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<String> putCategory(@PathVariable Long id, @RequestBody Category updatedCategory) {
-
+    @PutMapping("/category/{id}")
+    public ResponseEntity<String> updateCategory(@PathVariable Long id, @RequestBody Category updatedCategory) {
         if (categoryService.listarPorId(id).isPresent()) {
             categoryService.editar(id, updatedCategory);
-            return ResponseEntity.ok("Categoria atualizada com sucesso!");
+            return ResponseEntity.ok("Category updated successfully!");
         }
         return ResponseEntity.notFound().build();
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/category/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
         if (categoryService.listarPorId(id).isPresent()) {
             categoryService.deletar(id);
