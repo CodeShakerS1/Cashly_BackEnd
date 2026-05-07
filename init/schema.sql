@@ -87,3 +87,11 @@ CREATE TABLE IF NOT EXISTS `transaction` (
   CONSTRAINT `Fk_Id_Income_trans` FOREIGN KEY (`incomeid`) REFERENCES `income` (`incomeid`),
   CONSTRAINT `Fk_Id_User_trans` FOREIGN KEY (`userid`) REFERENCES `users` (`userid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+INSERT INTO category VALUES 
+(1, 'Food', 'restaurant', NULL, NULL),
+(2, 'Transport', 'directions-car', NULL, NULL),
+(3, 'Subscriptions', 'subscriptions', NULL, NULL),
+(4, 'Personal', 'person', NULL, NULL),
+(5, 'Health', 'favorite', NULL, NULL),
+(6, 'Housing', 'home', NULL, NULL);
