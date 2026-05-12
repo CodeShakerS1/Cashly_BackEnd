@@ -11,7 +11,7 @@ public class Transaction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "transactionid")
+    @Column(name = "transactionsid")
     private Integer id;
 
     @Column(name = "amount", nullable = false, precision = 10, scale = 2)
@@ -45,6 +45,8 @@ public class Transaction {
         this.expenseId = expenseId;
         this.incomeId = incomeId;
     }
+    
+    public Transaction() {}
  
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }

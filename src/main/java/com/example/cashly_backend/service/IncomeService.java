@@ -9,13 +9,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.cashly_backend.entity.Income;
+import com.example.cashly_backend.entity.Transaction;
 import com.example.cashly_backend.repository.IncomeRepository;
+import com.example.cashly_backend.repository.TransactionRepository;
 
 @Service
 public class IncomeService {
 
     @Autowired
     private IncomeRepository repository;
+
+    @Autowired
+    private TransactionRepository transactionRepository;
 
     public List<Income> findAll() {
         return repository.findAll();
@@ -38,9 +43,21 @@ public class IncomeService {
         return total != null ? total : BigDecimal.ZERO;
     }
 
-    public Income save(Income income) {
-        return repository.save(income);
-    }
+   public Income save(Income income) {
+    Income saved = repository.save(income);
+
+    Transaction transaction = new Transaction();
+    transaction.setAmount(saved.getAmount());
+    transaction.setDescription(saved.getName());  
+    transaction.setMethod(saved.getMethod());
+    transaction.setDate(saved.getDate());            
+    transaction.setUserId(saved.getUserId());         
+    transaction.setIncomeId(saved.getId());        
+
+    transactionRepository.save(transaction);
+
+    return saved;
+}
 
     public Income update(Integer id, Income income) {
         income.setId(id);

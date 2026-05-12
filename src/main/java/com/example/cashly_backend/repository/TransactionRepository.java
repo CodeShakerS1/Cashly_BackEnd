@@ -1,7 +1,6 @@
 package com.example.cashly_backend.repository;
 
 import java.time.LocalDate;
-import java.util.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
