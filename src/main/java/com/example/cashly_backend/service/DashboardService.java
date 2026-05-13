@@ -20,21 +20,25 @@ public class DashboardService {
     @Autowired
     private DashboardRepository dashboardRepository;
 
-    private static final String[] DAY_NAMES = {"Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"};
+    private static final String[] DAY_NAMES = {"D", "S", "T", "Q", "Q", "S", "S"};
 
     public DashboardResponse getDashboard(Integer userId, String week) {
         LocalDate today = LocalDate.now();
-        LocalDate startOfWeek = today.with(DayOfWeek.MONDAY).minusDays(1); // Domingo
-        LocalDate endOfWeek = startOfWeek.plusDays(6);                      // Sábado
+
+        LocalDate currentStart = today.with(DayOfWeek.MONDAY).minusDays(1);
+        LocalDate currentEnd = currentStart.plusDays(6);
+
+        LocalDate chartStart = currentStart;
+        LocalDate chartEnd = currentEnd;
 
         if ("previous".equals(week)) {
-            startOfWeek = startOfWeek.minusWeeks(1);
-            endOfWeek = endOfWeek.minusWeeks(1);
+            chartStart = currentStart.minusWeeks(1);
+            chartEnd = currentEnd.minusWeeks(1);
         }
 
         BigDecimal totalBalance = dashboardRepository.getTotalBalance(userId);
 
-        List<Object[]> rawChart = dashboardRepository.getWeeklyExpenses(userId, startOfWeek, endOfWeek);
+        List<Object[]> rawChart = dashboardRepository.getWeeklyExpenses(userId, chartStart, chartEnd);
         Map<Integer, BigDecimal> chartMap = new HashMap<>();
         for (Object[] row : rawChart) {
             chartMap.put(((Number) row[0]).intValue(), (BigDecimal) row[1]);
@@ -51,7 +55,7 @@ public class DashboardService {
                     .build());
         }
 
-        List<Object[]> rawCategories = dashboardRepository.getCategoryExpenses(userId, startOfWeek, endOfWeek);
+        List<Object[]> rawCategories = dashboardRepository.getAllCategories(userId);
         List<DashboardResponse.CategoryExpense> categories = rawCategories.stream()
                 .map(row -> DashboardResponse.CategoryExpense.builder()
                         .categoryName((String) row[0])
