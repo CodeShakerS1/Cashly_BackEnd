@@ -1,0 +1,63 @@
+package com.example.cashly_backend.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import com.example.cashly_backend.entity.Notification;
+import com.example.cashly_backend.service.NotificationService;
+
+@RestController
+public class NotificationController {
+
+    @Autowired
+    private NotificationService notificationService;
+
+    @PostMapping("/notification")
+    public ResponseEntity<String> createNotification(@RequestBody Notification notification) {
+        notificationService.cadastrar(notification);
+        return ResponseEntity.status(201).body("Notification created successfully!");
+    }
+
+    @GetMapping("/notification")
+    public ResponseEntity<List<Notification>> getNotifications() {
+        return ResponseEntity.ok(notificationService.listarTodas());
+    }
+
+    @GetMapping("/notification/{id}")
+    public ResponseEntity<Notification> getNotificationById(@PathVariable Integer id) {
+        return notificationService.listarPorId(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/notification/user/{userId}")
+    public ResponseEntity<List<Notification>> getNotificationsByUser(@PathVariable Integer userId) {
+        return ResponseEntity.ok(notificationService.listarPorUsuario(userId));
+    }
+
+    @GetMapping("/notification/user/{userId}/unread")
+    public ResponseEntity<List<Notification>> getUnreadNotificationsByUser(@PathVariable Integer userId) {
+        return ResponseEntity.ok(notificationService.listarNaoLidasPorUsuario(userId));
+    }
+
+    @PatchMapping("/notification/{id}/read")
+    public ResponseEntity<String> markAsRead(@PathVariable Integer id) {
+        if (notificationService.listarPorId(id).isPresent()) {
+            notificationService.marcarComoLida(id);
+            return ResponseEntity.ok("Notification marked as read!");
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @DeleteMapping("/notification/{id}")
+    public ResponseEntity<Void> deleteNotification(@PathVariable Integer id) {
+        if (notificationService.listarPorId(id).isPresent()) {
+            notificationService.deletar(id);
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+}
