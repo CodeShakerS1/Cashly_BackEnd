@@ -1,6 +1,6 @@
 # 💰 Cashly — Backend
 
-API REST do **Cashly**, aplicativo de controle financeiro pessoal. Desenvolvida com Spring Boot e MySQL, containerizada com Docker e protegida por autenticação JWT.
+API REST do **Cashly**, aplicativo de controle financeiro pessoal. Desenvolvida com Spring Boot e MySQL, containerizada com Docker.
 
 ---
 
@@ -135,9 +135,6 @@ http://localhost:8080/docs
 ```
 
 A interface do Swagger UI permite visualizar e testar todos os endpoints disponíveis.
-
-```
-```
 
 ---
 
