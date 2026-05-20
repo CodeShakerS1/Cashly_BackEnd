@@ -63,4 +63,8 @@ public class UserController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
     }
+    @PostMapping("/user/logout")
+    public ResponseEntity<String> logout() {
+        return ResponseEntity.ok("Logged out successfully!");
+    }
 }
