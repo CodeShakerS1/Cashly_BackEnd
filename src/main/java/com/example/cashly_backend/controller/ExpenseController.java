@@ -51,6 +51,13 @@ public class ExpenseController {
         return ResponseEntity.ok(service.sumByPeriod(id, start, end));
     }
 
+    @GetMapping("/expense/user/{userId}/category/{categoryId}")
+    public ResponseEntity<List<Expense>> getExpensesByCategory(
+        @PathVariable Integer userId,
+        @PathVariable Integer categoryId) {
+    return ResponseEntity.ok(service.findByCategory(userId, categoryId));
+    }
+
     @PostMapping("/expense")
     public ResponseEntity<String> createExpense(@RequestBody Expense expense) {
         service.save(expense);

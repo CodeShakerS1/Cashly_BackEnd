@@ -43,6 +43,10 @@ public class ExpenseService {
         return total != null ? total : BigDecimal.ZERO;
     }
 
+    public List<Expense> findByCategory(Integer userId, Integer categoryId) {
+    return repository.findByUserIdAndCategoryId(userId, categoryId);
+}
+
   public Expense save(Expense expense) {
     Expense saved = repository.save(expense);
 
