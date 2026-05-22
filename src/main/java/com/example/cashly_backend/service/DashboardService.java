@@ -56,13 +56,15 @@ public class DashboardService {
         }
 
         List<Object[]> rawCategories = dashboardRepository.getAllCategories(userId);
-        List<DashboardResponse.CategoryExpense> categories = rawCategories.stream()
-                .map(row -> DashboardResponse.CategoryExpense.builder()
-                        .categoryName((String) row[0])
-                        .icon((String) row[1])
-                        .total((BigDecimal) row[2])
-                        .build())
-                .toList();
+       List<DashboardResponse.CategoryExpense> categories = rawCategories.stream()
+        .map(row -> DashboardResponse.CategoryExpense.builder()
+                .categoryId(((Number) row[0]).intValue())
+                .categoryName((String) row[1])
+                .icon((String) row[2])
+                .limitAmount((BigDecimal) row[3])
+                .total((BigDecimal) row[4])
+                .build())
+        .toList();
 
         return DashboardResponse.builder()
                 .totalBalance(totalBalance)
