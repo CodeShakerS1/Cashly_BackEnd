@@ -3,11 +3,12 @@ package com.example.cashly_backend.service;
 import java.math.BigDecimal;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.example.cashly_backend.repository.ExpenseRepository;
 import com.example.cashly_backend.entity.Category;
 
-
+@Service
 public class NotificationTriggerService {
 
     @Autowired
