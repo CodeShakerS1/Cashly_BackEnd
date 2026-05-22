@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `username` varchar(100) NOT NULL,
   `email` varchar(100) NOT NULL,
   `userpassword` varchar(100) NOT NULL,
-  `photo` varchar(255) DEFAULT NULL,
+  `photo` LONGTEXT DEFAULT NULL,
   PRIMARY KEY (`userid`),
   UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

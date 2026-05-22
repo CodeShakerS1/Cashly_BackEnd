@@ -20,7 +20,7 @@ public class User {
     @Column(name = "userpassword", length = 100, nullable = false)
     private String password;
 
-    @Column(name = "photo", length = 255)
+    @Column(name = "photo", columnDefinition = "LONGTEXT")
     private String photo;
 
     public User() {
