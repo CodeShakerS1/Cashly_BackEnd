@@ -23,4 +23,7 @@ public interface ExpenseRepository extends JpaRepository<Expense, Integer> {
 
     @Query("SELECT e FROM Expense e WHERE e.userId = :userId AND e.categoryId = :categoryId")
     List<Expense> findByUserIdAndCategoryId(@Param("userId") Integer userId, @Param("categoryId") Integer categoryId);
+
+    @Query("SELECT SUM(e.amount) FROM Expense e WHERE e.userId = :userId AND e.categoryId = :categoryId AND MONTH(e.date) = MONTH(CURRENT_DATE) AND YEAR(e.date) = YEAR(CURRENT_DATE)")
+    BigDecimal sumByUserIdAndCategoryIdCurrentMonth(@Param("userId") Integer userId, @Param("categoryId") Integer categoryId);
 }
