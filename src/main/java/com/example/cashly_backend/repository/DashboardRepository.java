@@ -35,17 +35,19 @@ public interface DashboardRepository extends JpaRepository<Transaction, Integer>
         @Param("endOfWeek") LocalDate endOfWeek
     );
 
-    @Query(value = """
-        SELECT 
-          c.categoryname,
-          c.icon,
-          COALESCE(SUM(t.amount), 0) AS total
-        FROM category c
-        LEFT JOIN expense e ON e.categoryid = c.categoryid AND e.userid = :userId
-        LEFT JOIN transaction t ON t.expenseid = e.expenseid
-        WHERE c.userid = :userId
-        GROUP BY c.categoryid, c.categoryname, c.icon
-        ORDER BY total DESC
-        """, nativeQuery = true)
-    List<Object[]> getAllCategories(@Param("userId") Integer userId);
+ @Query(value = """
+    SELECT 
+      c.categoryid,
+      c.categoryname,
+      c.icon,
+      c.limit_amount,
+      COALESCE(SUM(t.amount), 0) AS total
+    FROM category c
+    LEFT JOIN expense e ON e.categoryid = c.categoryid AND e.userid = :userId
+    LEFT JOIN transaction t ON t.expenseid = e.expenseid
+    WHERE c.userid = :userId
+    GROUP BY c.categoryid, c.categoryname, c.icon, c.limit_amount
+    ORDER BY total DESC
+    """, nativeQuery = true)
+List<Object[]> getAllCategories(@Param("userId") Integer userId);
 }

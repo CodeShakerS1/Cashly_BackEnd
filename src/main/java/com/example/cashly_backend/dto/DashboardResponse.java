@@ -22,8 +22,10 @@ public class DashboardResponse {
     @Data
     @Builder
     public static class CategoryExpense {
+        private Integer categoryId;
         private String categoryName;
         private String icon;
+        private BigDecimal limitAmount;
         private BigDecimal total;
     }
 }
