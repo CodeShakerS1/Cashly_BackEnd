@@ -1,5 +1,6 @@
 package com.example.cashly_backend.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,12 +36,24 @@ public class NotificationService {
         return repository.save(notification);
     }
 
-    public Notification marcarComoLida(Integer id) {
-        Notification notification = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Notification not found"));
-        notification.setIsRead(true);
-        return repository.save(notification);
+    public Notification criarNotificacao(String titulo, String mensagem, String tipo, Integer userId) {
+        Notification notif = new Notification();
+        notif.setTitle(titulo);
+        notif.setMessage(mensagem);
+        notif.setType(tipo);
+        notif.setUserId(userId);
+        notif.setIsRead(false);
+        notif.setCreatedAt(LocalDateTime.now());
+        
+        return this.cadastrar(notif);
     }
+
+    public Notification marcarComoLida(Integer id) {
+    Notification notif = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Notificação não encontrada"));
+    notif.setIsRead(true);
+    return repository.save(notif); 
+}
 
     public void deletar(Integer id) {
         repository.deleteById(id);
