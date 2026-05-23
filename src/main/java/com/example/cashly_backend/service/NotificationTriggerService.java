@@ -28,7 +28,7 @@ public class NotificationTriggerService {
     
     
     public void checkCategoryLimit(Category category, Integer userId){
-        if (categoria.getLimitAmount() == null){
+        if (category.getLimitAmount() == null){
             return;
         }
 
@@ -47,7 +47,7 @@ public class NotificationTriggerService {
             
             notificationService.createNotification(
                 "⚠️ Limite em Alerta",
-                "Você atingiu 80% do limite de " + categoria.getCategoryname() + 
+                "Você atingiu 80% do limite de " + category.getCategoryname() + 
                 " (R$ " + totalExpense + " de R$ " + limit + ")",
                 "limit_warning_80",
                 userId
@@ -57,8 +57,8 @@ public class NotificationTriggerService {
         else if (percentageSpent.compareTo(new BigDecimal("100")) >= 0) {
             notificationService.createNotification(
                 "🚨 Limite Excedido",
-                "Você excedeu o limite de " + categoria.getCategoryname() + 
-                " (R$ " + totalGasto + " de R$ " + limite + ")",
+                "Você excedeu o limite de " + category.getCategoryname() + 
+                " (R$ " + totalExpense + " de R$ " + limit + ")",
                 "limit_exceeded_100",
                 userId
             );

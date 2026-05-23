@@ -67,7 +67,7 @@ public class ExpenseService {
     transactionRepository.save(transaction);
 
      if(saved.getCategoryId() != null) {
-        categoryService.listarPorId(saved.getCategoryId()).ifPresent(category -> 
+        categoryService.findById(saved.getCategoryId()).ifPresent(category -> 
             notificationTriggerService.checkCategoryLimit(category, saved.getUserId()));
         }
 
