@@ -16,46 +16,46 @@ public class NotificationService {
     @Autowired
     private NotificationRepository repository;
 
-    public List<Notification> listarTodas() {
+    public List<Notification> findAll() {
         return repository.findAll();
     }
 
-    public Optional<Notification> listarPorId(Integer id) {
+    public Optional<Notification> findById(Integer id) {
         return repository.findById(id);
     }
 
-    public List<Notification> listarPorUsuario(Integer userId) {
+    public List<Notification> findByUser(Integer userId) {
         return repository.findByUserId(userId);
     }
 
-    public List<Notification> listarNaoLidasPorUsuario(Integer userId) {
+    public List<Notification> findUnreadNotificationsByUser(Integer userId) {
         return repository.findByUserIdAndIsRead(userId, false);
     }
 
-    public Notification cadastrar(Notification notification) {
+    public Notification registerNotification(Notification notification) {
         return repository.save(notification);
     }
 
-    public Notification criarNotificacao(String titulo, String mensagem, String tipo, Integer userId) {
+    public Notification createNotification(String title, String message, String type, Integer userId) {
         Notification notif = new Notification();
-        notif.setTitle(titulo);
-        notif.setMessage(mensagem);
-        notif.setType(tipo);
+        notif.setTitle(title);
+        notif.setMessage(message);
+        notif.setType(type);
         notif.setUserId(userId);
         notif.setIsRead(false);
         notif.setCreatedAt(LocalDateTime.now());
         
-        return this.cadastrar(notif);
+        return this.registerNotification(notif);
     }
 
-    public Notification marcarComoLida(Integer id) {
+    public Notification markAsReadNotification(Integer id) {
     Notification notif = repository.findById(id)
             .orElseThrow(() -> new RuntimeException("Notificação não encontrada"));
     notif.setIsRead(true);
     return repository.save(notif); 
 }
 
-    public void deletar(Integer id) {
+    public void deleteNotification(Integer id) {
         repository.deleteById(id);
     }
 }
