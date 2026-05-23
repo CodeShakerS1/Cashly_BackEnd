@@ -15,32 +15,32 @@ public class CategoryService {
     @Autowired
     private CategoryRepository repository;
 
-    public List<Category> listarTodas() {
+    public List<Category> findAll() {
         return repository.findAll();
     }
 
-    public Optional<Category> listarPorId(Integer id) {
+    public Optional<Category> findById(Integer id) {
         return repository.findById(id);
     }
 
-    public List<Category> listarPadrao() {
+    public List<Category> findDefaultCategories() {
         return repository.findByUserIdIsNull();
     }
 
-    public List<Category> listarPorUsuario(Integer id) {
+    public List<Category> findByUser(Integer id) {
         return repository.findByUserId(id);
     }
 
-    public Category cadastrar(Category category) {
+    public Category registerCategory(Category category) {
         return repository.save(category);
     }
 
-    public Category editar(Integer id, Category category) {
+    public Category updateCategory(Integer id, Category category) {
         category.setCategoryid(id);
         return repository.save(category);
     }
 
-    public void deletar(Integer id) {
+    public void deleteCategory(Integer id) {
         repository.deleteById(id);
     }
 }

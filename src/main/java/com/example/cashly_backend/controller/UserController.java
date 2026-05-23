@@ -40,7 +40,10 @@ public class UserController {
         return repository.findById(id).map(user -> {
             user.setName(updatedUser.getName());
             user.setEmail(updatedUser.getEmail());
+             if (updatedUser.getPassword() != null &&
+            !updatedUser.getPassword().isBlank()) {
             user.setPassword(updatedUser.getPassword());
+        }
             user.setPhoto(updatedUser.getPhoto());
             repository.save(user);
             return ResponseEntity.ok("User updated successfully!");
