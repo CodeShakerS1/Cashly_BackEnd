@@ -22,6 +22,9 @@ public class IncomeService {
     @Autowired
     private TransactionRepository transactionRepository;
 
+    @Autowired
+    private NotificationTriggerService notificationTriggerService;
+
     public List<Income> findAll() {
         return repository.findAll();
     }
@@ -56,7 +59,13 @@ public class IncomeService {
 
     transactionRepository.save(transaction);
 
-    return saved;
+    notificationTriggerService.notifyIncomeAdded(
+        saved.getName(),
+        saved.getAmount(),
+        saved.getUserId()
+    );
+
+        return saved;
 }
 
     public Income update(Integer id, Income income) {

@@ -22,6 +22,12 @@ public class ExpenseService {
     @Autowired
     private TransactionRepository transactionRepository;
 
+    @Autowired
+    private NotificationTriggerService notificationTriggerService;
+
+    @Autowired
+    private CategoryService categoryService;
+
     public List<Expense> findAll() {
         return repository.findAll();
     }
@@ -52,13 +58,18 @@ public class ExpenseService {
 
     Transaction transaction = new Transaction();
     transaction.setAmount(saved.getAmount());
-    transaction.setDescription(saved.getName());      // getName() não getExpensename()
+    transaction.setDescription(saved.getName());      
     transaction.setMethod(saved.getMethod());
-    transaction.setDate(saved.getDate());             // getDate() não getExpensedate()
-    transaction.setUserId(saved.getUserId());         // getUserId() não getUserid()
-    transaction.setExpenseId(saved.getId());          // getId() não getExpenseid()
+    transaction.setDate(saved.getDate());             
+    transaction.setUserId(saved.getUserId());         
+    transaction.setExpenseId(saved.getId());        
 
     transactionRepository.save(transaction);
+
+     if(saved.getCategoryId() != null) {
+        categoryService.listarPorId(saved.getCategoryId()).ifPresent(category -> 
+            notificationTriggerService.checkCategoryLimit(category, saved.getUserId()));
+        }
 
     return saved;
 }
