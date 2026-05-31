@@ -27,7 +27,7 @@ public class TransactionService {
     }
 
     public List<Transaction> findByPeriod(Integer id, LocalDate start, LocalDate end){
-        return repository.findByUserIdAndDateBetween(id, null, null);
+        return repository.findByUserIdAndDateBetween(id, start, end);
     }
 
     public Transaction save(Transaction transaction){
@@ -42,6 +42,4 @@ public class TransactionService {
     public void delete(Integer id){
         repository.deleteById(id);
     }
-
-
 }
