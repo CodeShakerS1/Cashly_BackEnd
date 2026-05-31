@@ -9,63 +9,53 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.cashly_backend.entity.User;
-import com.example.cashly_backend.repository.UserRepository;
+import com.example.cashly_backend.service.UserService;
 
 @RestController
 public class UserController {
 
     @Autowired
-    private UserRepository repository;
+    private UserService userService;
 
     @PostMapping("/user")
     public ResponseEntity<String> createUser(@RequestBody User user) {
-        repository.save(user);
+        userService.createUser(user);
         return ResponseEntity.status(201).body("User created successfully!");
     }
 
     @GetMapping("/user")
     public ResponseEntity<List<User>> getUsers() {
-        return ResponseEntity.ok(repository.findAll());
+        return ResponseEntity.ok(userService.getUsers());
     }
 
     @GetMapping("/user/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Integer id) {
-        return repository.findById(id)
+        return userService.getUserById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/user/{id}")
     public ResponseEntity<String> updateUser(@PathVariable Integer id, @RequestBody User updatedUser) {
-        return repository.findById(id).map(user -> {
-            user.setName(updatedUser.getName());
-            user.setEmail(updatedUser.getEmail());
-             if (updatedUser.getPassword() != null &&
-            !updatedUser.getPassword().isBlank()) {
-            user.setPassword(updatedUser.getPassword());
-        }
-            user.setPhoto(updatedUser.getPhoto());
-            repository.save(user);
-            return ResponseEntity.ok("User updated successfully!");
-        }).orElse(ResponseEntity.notFound().build());
+        return userService.updateUser(id, updatedUser)
+                .map(u -> ResponseEntity.ok("User updated successfully!"))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/user/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Integer id) {
-        if (repository.existsById(id)) {
-            repository.deleteById(id);
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+        return userService.deleteUser(id)
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.notFound().build();
     }
 
     @PostMapping("/user/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
-        return repository.findByEmail(credentials.get("email"))
-                .filter(u -> u.getPassword().equals(credentials.get("password")))
+        return userService.login(credentials)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
     }
+
     @PostMapping("/user/logout")
     public ResponseEntity<String> logout() {
         return ResponseEntity.ok("Logged out successfully!");
