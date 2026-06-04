@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.cashly_backend.entity.Income;
 import com.example.cashly_backend.entity.Transaction;
@@ -46,34 +47,53 @@ public class IncomeService {
         return total != null ? total : BigDecimal.ZERO;
     }
 
-   public Income save(Income income) {
-    Income saved = repository.save(income);
+    public Income save(Income income) {
+        Income saved = repository.save(income);
 
-    Transaction transaction = new Transaction();
-    transaction.setAmount(saved.getAmount());
-    transaction.setDescription(saved.getName());  
-    transaction.setMethod(saved.getMethod());
-    transaction.setDate(saved.getDate());            
-    transaction.setUserId(saved.getUserId());         
-    transaction.setIncomeId(saved.getId());        
+        Transaction transaction = new Transaction();
+        transaction.setAmount(saved.getAmount());
+        transaction.setDescription(saved.getName());
+        transaction.setMethod(saved.getMethod());
+        transaction.setDate(saved.getDate());
+        transaction.setUserId(saved.getUserId());
+        transaction.setIncomeId(saved.getId());
 
-    transactionRepository.save(transaction);
+        transactionRepository.save(transaction);
 
-    notificationTriggerService.notifyIncomeAdded(
-        saved.getName(),
-        saved.getAmount(),
-        saved.getUserId()
-    );
+        notificationTriggerService.notifyIncomeAdded(
+            saved.getName(),
+            saved.getAmount(),
+            saved.getUserId()
+        );
 
         return saved;
+    }
+
+    public Income update(Integer id, Income updatedIncome) {
+        Income existing = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Income not found"));
+
+        existing.setName(updatedIncome.getName());
+        existing.setAmount(updatedIncome.getAmount());
+        existing.setDate(updatedIncome.getDate());
+        existing.setMethod(updatedIncome.getMethod());
+
+        Income saved = repository.save(existing);
+
+        transactionRepository.findByIncomeId(id).ifPresent(transaction -> {
+            transaction.setAmount(saved.getAmount());
+            transaction.setDescription(saved.getName());
+            transaction.setMethod(saved.getMethod());
+            transaction.setDate(saved.getDate());
+            transactionRepository.save(transaction);
+        });
+
+        return saved;
+    }
+
+   @Transactional
+public void delete(Integer id) {
+    transactionRepository.deleteByIncomeId(id);
+    repository.deleteById(id);
 }
-
-    public Income update(Integer id, Income income) {
-        income.setId(id);
-        return repository.save(income);
-    }
-
-    public void delete(Integer id) {
-        repository.deleteById(id);
-    }
 }
