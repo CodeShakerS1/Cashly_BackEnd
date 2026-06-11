@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,8 +14,11 @@ import com.example.cashly_backend.service.ExpenseService;
 @RestController
 public class ExpenseController {
 
-    @Autowired
-    private ExpenseService service;
+    private final ExpenseService service;
+
+    ExpenseController(ExpenseService service) {
+        this.service = service;
+    }
 
     @GetMapping("/expense")
     public ResponseEntity<List<Expense>> getExpenses() {

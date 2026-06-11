@@ -2,7 +2,6 @@ package com.example.cashly_backend.service;
 
 import java.time.*;
 import java.util.*;
-import org.springframework.beans.factory.annotation.*;
 import org.springframework.stereotype.Service;
 
 import com.example.cashly_backend.entity.Transaction;
@@ -11,8 +10,11 @@ import com.example.cashly_backend.repository.TransactionRepository;
 @Service
 public class TransactionService {
 
-    @Autowired
-    private TransactionRepository repository;
+    private final TransactionRepository repository;
+
+    TransactionService(TransactionRepository repository) {
+        this.repository = repository;
+    }
 
     public List<Transaction> findAll() {
         return repository.findAll();

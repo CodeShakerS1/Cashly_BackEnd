@@ -3,7 +3,6 @@ package com.example.cashly_backend.service;
 import com.example.cashly_backend.dto.DashboardResponse;
 import com.example.cashly_backend.repository.DashboardRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -17,10 +16,13 @@ import java.util.Map;
 @Service
 public class DashboardService {
 
-    @Autowired
-    private DashboardRepository dashboardRepository;
+    private final DashboardRepository dashboardRepository;
 
     private static final String[] DAY_NAMES = {"D", "S", "T", "Q", "Q", "S", "S"};
+
+    DashboardService(DashboardRepository dashboardRepository) {
+        this.dashboardRepository = dashboardRepository;
+    }
 
     public DashboardResponse getDashboard(Integer userId, String week) {
         LocalDate today = LocalDate.now();

@@ -1,67 +1,100 @@
-package com.example.cashly_backend.service;
+    package com.example.cashly_backend.service;
 
-import java.math.BigDecimal;
+    import java.math.BigDecimal;
+    import org.springframework.stereotype.Service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+    import com.example.cashly_backend.repository.DashboardRepository;
+    import com.example.cashly_backend.repository.ExpenseRepository;
+    import com.example.cashly_backend.entity.Category;
 
-import com.example.cashly_backend.repository.ExpenseRepository;
-import com.example.cashly_backend.entity.Category;
+    @Service
+    public class NotificationTriggerService {
 
-@Service
-public class NotificationTriggerService {
+        public final NotificationService notificationService;
+        public final ExpenseRepository expenseRepository;
+        public final DashboardRepository dashboardRepository;
 
-    @Autowired
-    public NotificationService notificationService;
+        NotificationTriggerService(NotificationService notificationService,
+                                ExpenseRepository expenseRepository,
+                                DashboardRepository dashboardRepository) {
+            this.notificationService = notificationService;
+            this.expenseRepository = expenseRepository;
+            this.dashboardRepository = dashboardRepository;
+        }
 
-    @Autowired
-    public ExpenseRepository expenseRepository;
-
-    public void notifyIncomeAdded(String incomeName,  BigDecimal amount, Integer userId){
+        public void notifyIncomeAdded(String incomeName,  BigDecimal amount, Integer userId){
+            notificationService.createNotification(
+                " ✅ Receita adicionada!",
+                "Você adicionou uma receita de R$ " + amount + " (" + incomeName +")",
+                "income_sucess",
+                userId
+            );
+        }
+        public void notifyExpenseAdded(String expenseName, BigDecimal amount, Integer userId) {
+            notificationService.createNotification(
+                "💸 Despesa adicionada!",
+                "Você adicionou uma despesa de R$ " + amount + " (" + expenseName + ")",
+                "expense_success",
+                userId
+            );
+        }
+        public void notifyExpenseUpdated(String expenseName, BigDecimal amount, Integer userId) {
         notificationService.createNotification(
-            " ✅ Receita adicionada!",
-            "Você adicionou uma receita de R$ " + amount + " (" + incomeName +")",
-            "income_sucess",
+            "✏️ Despesa atualizada!",
+            "Você atualizou a despesa \"" + expenseName + "\" para R$ " + amount,
+            "expense_updated",
             userId
         );
     }
-    
-    
-    public void checkCategoryLimit(Category category, Integer userId){
-        if (category.getLimitAmount() == null){
-            return;
+
+        public void checkNegativeBalance(Integer userId) {
+            BigDecimal balance = dashboardRepository.getTotalBalance(userId);
+
+            if (balance.compareTo(BigDecimal.ZERO) < 0) {
+                notificationService.createNotification(
+                    "🔴 Saldo Negativo",
+                    "Seu saldo está negativo: R$ " + balance,
+                    "negative_balance",
+                    userId
+                );
+            }
         }
+        
+        public void checkCategoryLimit(Category category, Integer userId){
+            if (category.getLimitAmount() == null){
+                return;
+            }
 
-        BigDecimal totalExpense = expenseRepository.sumByUserIdAndCategoryIdCurrentMonth(userId, category.getCategoryid());
-        if (totalExpense == null) {
-            totalExpense = BigDecimal.ZERO;
-        }
+            BigDecimal totalExpense = expenseRepository.sumByUserIdAndCategoryIdCurrentMonth(userId, category.getCategoryid());
+            if (totalExpense == null) {
+                totalExpense = BigDecimal.ZERO;
+            }
 
-        BigDecimal limit = category.getLimitAmount();
+            BigDecimal limit = category.getLimitAmount();
 
-        BigDecimal percentageSpent = totalExpense.divide(limit, 2, java.math.RoundingMode.HALF_UP)
-                                              .multiply(new BigDecimal("100"));
+            BigDecimal percentageSpent = totalExpense.divide(limit, 2, java.math.RoundingMode.HALF_UP)
+                                                .multiply(new BigDecimal("100"));
 
-        if (percentageSpent.compareTo(new BigDecimal("80")) >= 0 && 
-            percentageSpent.compareTo(new BigDecimal("100")) < 0) {
-            
-            notificationService.createNotification(
-                "⚠️ Limite em Alerta",
-                "Você atingiu 80% do limite de " + category.getCategoryname() + 
-                " (R$ " + totalExpense + " de R$ " + limit + ")",
-                "limit_warning_80",
-                userId
-            );
-        }
+            if (percentageSpent.compareTo(new BigDecimal("80")) >= 0 && 
+                percentageSpent.compareTo(new BigDecimal("100")) < 0) {
+                
+                notificationService.createNotification(
+                    "⚠️ Limite em Alerta",
+                    "Você atingiu 80% do limite de " + category.getCategoryname() + 
+                    " (R$ " + totalExpense + " de R$ " + limit + ")",
+                    "limit_warning_80",
+                    userId
+                );
+            }
 
-        else if (percentageSpent.compareTo(new BigDecimal("100")) >= 0) {
-            notificationService.createNotification(
-                "🚨 Limite Excedido",
-                "Você excedeu o limite de " + category.getCategoryname() + 
-                " (R$ " + totalExpense + " de R$ " + limit + ")",
-                "limit_exceeded_100",
-                userId
-            );
+            else if (percentageSpent.compareTo(new BigDecimal("100")) >= 0) {
+                notificationService.createNotification(
+                    "🚨 Limite Excedido",
+                    "Você excedeu o limite de " + category.getCategoryname() + 
+                    " (R$ " + totalExpense + " de R$ " + limit + ")",
+                    "limit_exceeded_100",
+                    userId
+                );
+            }
         }
     }
-}
