@@ -3,7 +3,6 @@ package com.example.cashly_backend.service;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.cashly_backend.entity.Category;
@@ -12,8 +11,11 @@ import com.example.cashly_backend.repository.CategoryRepository;
 @Service
 public class CategoryService {
 
-    @Autowired
-    private CategoryRepository repository;
+    private final CategoryRepository repository;
+
+    CategoryService(CategoryRepository repository) {
+        this.repository = repository;
+    }
 
     public List<Category> findAll() {
         return repository.findAll();

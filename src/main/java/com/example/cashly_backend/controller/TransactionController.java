@@ -3,7 +3,6 @@ package com.example.cashly_backend.controller;
 import java.time.LocalDate;
 import java.util.*;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,8 +14,11 @@ import com.example.cashly_backend.service.TransactionService;
 @RequestMapping("/transaction")
 public class TransactionController {
 
-    @Autowired
-    private TransactionService service;
+    private final TransactionService service;
+
+    TransactionController(TransactionService service) {
+        this.service = service;
+    }
 
     @GetMapping
     public List<Transaction> findAll(){

@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,14 +16,17 @@ import com.example.cashly_backend.repository.TransactionRepository;
 @Service
 public class IncomeService {
 
-    @Autowired
-    private IncomeRepository repository;
+    private final IncomeRepository repository;
 
-    @Autowired
-    private TransactionRepository transactionRepository;
+    private final TransactionRepository transactionRepository;
 
-    @Autowired
-    private NotificationTriggerService notificationTriggerService;
+    private final NotificationTriggerService notificationTriggerService;
+
+    IncomeService(IncomeRepository repository, TransactionRepository transactionRepository, NotificationTriggerService notificationTriggerService) {
+        this.repository = repository;
+        this.transactionRepository = transactionRepository;
+        this.notificationTriggerService = notificationTriggerService;
+    }
 
     public List<Income> findAll() {
         return repository.findAll();
