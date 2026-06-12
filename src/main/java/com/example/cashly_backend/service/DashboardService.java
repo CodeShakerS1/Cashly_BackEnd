@@ -27,7 +27,7 @@ public class DashboardService {
     public DashboardResponse getDashboard(Integer userId, String week) {
         LocalDate today = LocalDate.now();
 
-        LocalDate currentStart = today.with(DayOfWeek.MONDAY);
+        LocalDate currentStart = today.with(DayOfWeek.SUNDAY);
         LocalDate currentEnd = currentStart.plusDays(6);
 
         LocalDate chartStart = currentStart;
