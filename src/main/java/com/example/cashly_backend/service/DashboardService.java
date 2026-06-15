@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +28,7 @@ public class DashboardService {
     public DashboardResponse getDashboard(Integer userId, String week) {
         LocalDate today = LocalDate.now();
 
-        LocalDate currentStart = today.with(DayOfWeek.SUNDAY);
+        LocalDate currentStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
         LocalDate currentEnd = currentStart.plusDays(6);
 
         LocalDate chartStart = currentStart;
