@@ -1,12 +1,14 @@
 package com.example.cashly_backend.service;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.time.LocalDate;
@@ -17,7 +19,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -45,14 +46,14 @@ public class SpreadsheetService {
 
     private static final DateTimeFormatter BR_DATE = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-   
+    // texto da planilha (sem acento, minúsculo) -> valor que o banco usa
     private static final Map<String, String> METHODS = Map.of(
             "pix", "Pix",
             "debito", "Debit", "debit", "Debit",
             "credito", "Credit", "credit", "Credit",
             "dinheiro", "Cash", "cash", "Cash");
 
-
+    // valor do banco -> texto em português para exportar
     private static final Map<String, String> METHOD_LABELS = Map.of(
             "Pix", "Pix", "Debit", "Débito", "Credit", "Crédito", "Cash", "Dinheiro");
 
@@ -80,13 +81,15 @@ public class SpreadsheetService {
             throw new IllegalArgumentException("Envie um arquivo .xlsx ou .csv");
         }
 
+        // nome da categoria -> id, só das categorias do próprio usuário (são as que o app mostra)
         Map<String, Integer> categoryIds = new HashMap<>();
-        for (Category c : loadCategories(userId)) {
+        for (Category c : categoryRepository.findByUserId(userId)) {
             categoryIds.put(normalize(c.getCategoryname()), c.getCategoryid());
         }
 
         int imported = 0;
         List<String> errors = new ArrayList<>();
+        List<String> createdCategories = new ArrayList<>();
 
         for (Map<String, String> row : rows) {
             String line = row.get("_linha");
@@ -101,8 +104,21 @@ public class SpreadsheetService {
 
                 LocalDate date = parseDate(row.get("data"));
 
-             
-                Integer categoryId = categoryIds.get(normalize(row.getOrDefault("categoria", "")));
+                // categoria é opcional; se o nome ainda não existir para o usuário, cria a categoria
+                Integer categoryId = null;
+                String categoryName = row.getOrDefault("categoria", "").trim();
+                if (!categoryName.isEmpty()) {
+                    String key = normalize(categoryName);
+                    categoryId = categoryIds.get(key);
+
+                    if (categoryId == null) {
+                        String finalName = categoryName.length() > 50 ? categoryName.substring(0, 50) : categoryName;
+                        Category created = categoryRepository.save(new Category(null, finalName, "category", null, userId));
+                        categoryId = created.getCategoryid();
+                        categoryIds.put(key, categoryId);
+                        createdCategories.add(finalName);
+                    }
+                }
 
                 expenseService.save(new Expense(null, name, amount, method, date, userId, categoryId));
                 imported++;
@@ -111,10 +127,10 @@ public class SpreadsheetService {
             }
         }
 
-        return new ImportResult(imported, errors);
+        return new ImportResult(imported, errors, createdCategories);
     }
 
-
+    // Lê um .xlsx/.xls. Devolve uma lista de linhas; cada linha é um mapa cabeçalho -> valor
     private List<Map<String, String>> readExcel(InputStream in) throws IOException {
         List<Map<String, String>> rows = new ArrayList<>();
         DataFormatter formatter = new DataFormatter();
@@ -142,9 +158,9 @@ public class SpreadsheetService {
                     if (!value.isEmpty()) empty = false;
                     map.put(headers.get(i), value);
                 }
-                if (empty) continue; 
+                if (empty) continue; // pula linha em branco
 
-                map.put("_linha", String.valueOf(r + 1)); 
+                map.put("_linha", String.valueOf(r + 1)); // número da linha como aparece no Excel
                 rows.add(map);
             }
         }
@@ -162,38 +178,88 @@ public class SpreadsheetService {
         return formatter.formatCellValue(cell, evaluator).trim();
     }
 
+    // Lê um .csv: detecta o separador (; , ou tab), a codificação (UTF-8 ou ANSI do Excel)
+    // e aceita valores entre aspas, como "152,90".
     private List<Map<String, String>> readCsv(InputStream in) throws IOException {
         List<Map<String, String>> rows = new ArrayList<>();
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
-            String headerLine = reader.readLine();
-            if (headerLine == null) return rows;
-            headerLine = headerLine.replace("\uFEFF", ""); // remove o BOM que o Excel coloca
+        String text = decode(in.readAllBytes()).replace("\uFEFF", ""); // tira o BOM
+        String[] lines = text.split("\\r?\\n");
+        if (lines.length == 0 || lines[0].isBlank()) return rows;
 
-            String separator = Pattern.quote(headerLine.contains(";") ? ";" : ",");
+        char separator = detectSeparator(lines[0]);
 
-            List<String> headers = new ArrayList<>();
-            for (String h : headerLine.split(separator, -1)) {
-                headers.add(normalize(h.replace("\"", "")));
+        List<String> headers = new ArrayList<>();
+        for (String h : splitCsvLine(lines[0], separator)) {
+            headers.add(normalize(h));
+        }
+
+        for (int n = 1; n < lines.length; n++) {
+            if (lines[n].isBlank()) continue;
+
+            List<String> values = splitCsvLine(lines[n], separator);
+            Map<String, String> map = new LinkedHashMap<>();
+            for (int i = 0; i < headers.size(); i++) {
+                map.put(headers.get(i), i < values.size() ? values.get(i).trim() : "");
             }
-
-            String line;
-            int lineNumber = 1;
-            while ((line = reader.readLine()) != null) {
-                lineNumber++;
-                if (line.isBlank()) continue;
-
-                String[] values = line.split(separator, -1);
-                Map<String, String> map = new LinkedHashMap<>();
-                for (int i = 0; i < headers.size(); i++) {
-                    String value = i < values.length ? values[i].replace("\"", "").trim() : "";
-                    map.put(headers.get(i), value);
-                }
-                map.put("_linha", String.valueOf(lineNumber));
-                rows.add(map);
-            }
+            map.put("_linha", String.valueOf(n + 1));
+            rows.add(map);
         }
         return rows;
+    }
+
+    // Tenta UTF-8; se o arquivo não for UTF-8 (CSV "ANSI" do Excel), usa windows-1252
+    private String decode(byte[] bytes) {
+        try {
+            return StandardCharsets.UTF_8.newDecoder()
+                    .onMalformedInput(CodingErrorAction.REPORT)
+                    .onUnmappableCharacter(CodingErrorAction.REPORT)
+                    .decode(ByteBuffer.wrap(bytes))
+                    .toString();
+        } catch (CharacterCodingException e) {
+            return new String(bytes, Charset.forName("windows-1252"));
+        }
+    }
+
+    // Separador = o que mais aparece na linha do cabeçalho
+    private char detectSeparator(String header) {
+        char best = ';';
+        long bestCount = 0;
+        for (char c : new char[] { ';', ',', '\t' }) {
+            final char candidate = c;
+            long count = header.chars().filter(ch -> ch == candidate).count();
+            if (count > bestCount) {
+                best = c;
+                bestCount = count;
+            }
+        }
+        return best;
+    }
+
+    // Divide uma linha respeitando aspas: "152,90";Pix -> [152,90] [Pix]
+    private List<String> splitCsvLine(String line, char separator) {
+        List<String> values = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        boolean inQuotes = false;
+
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            if (c == '"') {
+                if (inQuotes && i + 1 < line.length() && line.charAt(i + 1) == '"') {
+                    current.append('"'); // aspas duplas escapadas
+                    i++;
+                } else {
+                    inQuotes = !inQuotes;
+                }
+            } else if (c == separator && !inQuotes) {
+                values.add(current.toString());
+                current.setLength(0);
+            } else {
+                current.append(c);
+            }
+        }
+        values.add(current.toString());
+        return values;
     }
 
     private BigDecimal parseAmount(String value) {
@@ -247,6 +313,7 @@ public class SpreadsheetService {
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Sheet sheet = workbook.createSheet("Despesas");
 
+            // estilos: cabeçalho em negrito, valor em R$ e data de verdade (não texto)
             Font bold = workbook.createFont();
             bold.setBold(true);
             CellStyle headerStyle = workbook.createCellStyle();
@@ -304,9 +371,14 @@ public class SpreadsheetService {
         return csv.toString().getBytes(StandardCharsets.UTF_8);
     }
 
+    // tira ; e quebras de linha do texto para não quebrar o CSV
     private String clean(String text) {
         return text == null ? "" : text.replace(";", ",").replace("\n", " ").replace("\r", " ");
     }
+
+    // =====================================================
+    // AUXILIARES
+    // =====================================================
 
     private List<Category> loadCategories(Integer userId) {
         List<Category> all = new ArrayList<>(categoryRepository.findByUserIdIsNull());
@@ -314,7 +386,7 @@ public class SpreadsheetService {
         return all;
     }
 
-
+    // "Método" -> "metodo" (sem acento, minúsculo) para comparar sem erro
     private String normalize(String text) {
         if (text == null) return "";
         return Normalizer.normalize(text, Normalizer.Form.NFD)
